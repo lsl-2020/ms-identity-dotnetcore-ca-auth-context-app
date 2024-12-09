@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Identity.Web;
 using TodoListClient.Models;
 using TodoListClient.Common;
 
@@ -22,7 +21,6 @@ namespace TodoListClient.Controllers
     [Authorize]
     public class AdminController : Controller
     {
-        //private CommonDBContext _commonDBContext;
         private readonly AuthenticationContextClassReferencesOperations _authContextClassReferencesOperations;
         private readonly IConfiguration _configuration;
 
@@ -44,8 +42,8 @@ namespace TodoListClient.Controllers
 
             IEnumerable<SelectListItem> Operations = new List<SelectListItem>
                 {
-                    new SelectListItem{ Text= "Post" },
-                    new SelectListItem{ Text= "Delete"}
+                    new() { Text= "Post" },
+                    new() { Text= "Delete" }
                 };
 
             // If this tenant already has auth context available, we use those instead.
@@ -69,7 +67,7 @@ namespace TodoListClient.Controllers
             return View();
         }
 
-        // returns a default set of AuthN context values for the app to work with, either from Graph a or a default hard coded set
+        // Returns a default set of AuthN context values for the app to work with, either from Graph a or a default hard coded set
         private async Task<Dictionary<string, string>> GetAuthenticationContextValues()
         {
             // Default values, if no values anywhere, this table will be used.
@@ -116,7 +114,7 @@ namespace TodoListClient.Controllers
         /// <returns></returns>
         public IActionResult ViewDetails()
         {
-            List<AuthContext> authContexts = new List<AuthContext>();
+            List<AuthContext> authContexts = [];
 
             using (var commonDBContext = new CommonDBContext(_configuration))
             {
@@ -158,7 +156,6 @@ namespace TodoListClient.Controllers
         /// If not then create with default values.
         /// </summary>
         /// <returns></returns>
-        [AuthorizeForScopes(ScopeKeySection = "GraphBeta:Scopes")]
         public async Task<List<Microsoft.Graph.Models.AuthenticationContextClassReference>> CreateOrFetch()
         {
             // Call Graph to check first
@@ -172,7 +169,7 @@ namespace TodoListClient.Controllers
             {
                 await CreateAuthContextViaGraph();
             }
-            return lstPolicies;
+            return lstPolicies ?? [];
         }
 
         /// <summary>
@@ -185,7 +182,7 @@ namespace TodoListClient.Controllers
 
             foreach (KeyValuePair<string, string> acr in dictACRValues)
             {
-                await _authContextClassReferencesOperations.CreateAuthenticationContextClassReferenceAsync(acr.Key, acr.Value, $"A new Authentication Context Class Reference created at {DateTime.Now.ToString()}", true);
+                await _authContextClassReferencesOperations.CreateAuthenticationContextClassReferenceAsync(acr.Key, acr.Value, $"A new Authentication Context Class Reference created at {DateTime.Now}", true);
             }
         }
 
