@@ -1,189 +1,191 @@
-﻿extern alias BetaLib;
-
-using Microsoft.Graph;
+﻿using Microsoft.Graph;
+using Microsoft.Graph.Models;
 using Microsoft.Identity.Web;
+
 using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using Beta = BetaLib.Microsoft.Graph;
 
-namespace TodoListClient
+using AuthenticationContextClassReference = Microsoft.Graph.Models.AuthenticationContextClassReference;
+
+namespace TodoListClient.Common;
+
+/// <summary>
+/// Uses the Graph SDK to read and write authentication context via MS Graph
+/// </summary>
+public class AuthenticationContextClassReferencesOperations
 {
-    /// <summary>
-    /// Uses the Graph SDK to read and write authentication context via MS Graph
-    /// </summary>
-    public class AuthenticationContextClassReferencesOperations
+    private readonly GraphServiceClient _graphServiceClient;
+
+    public AuthenticationContextClassReferencesOperations(GraphServiceClient graphServiceClient)
     {
-        private Beta.GraphServiceClient _graphServiceClient;
+        _graphServiceClient = graphServiceClient;
+    }
 
-        public AuthenticationContextClassReferencesOperations(Beta.GraphServiceClient graphServiceClient)
+    public async Task<List<AuthenticationContextClassReference>> ListAuthenticationContextClassReferencesAsync()
+    {
+        List<AuthenticationContextClassReference> allAuthenticationContextClassReferences = [];
+
+        try
         {
-            this._graphServiceClient = graphServiceClient;
-            Beta.AuthenticationContextClassReference refn = new Beta.AuthenticationContextClassReference();
+            var authenticationContextClassreferences =
+                await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences.GetAsync();
+
+            if (authenticationContextClassreferences != null)
+            {
+                allAuthenticationContextClassReferences = await ProcessIAuthenticationContextClassReferenceRootPoliciesCollectionPage(authenticationContextClassreferences);
+            }
+        }
+        catch (ServiceException e)
+        {
+            Console.WriteLine($"We could not retrieve the existing ACRs: {e}");
+            if (e.InnerException != null)
+            {
+                var exp = (MicrosoftIdentityWebChallengeUserException)e.InnerException;
+                throw exp;
+            }
+            throw;
         }
 
-        public async Task<List<Beta.AuthenticationContextClassReference>> ListAuthenticationContextClassReferencesAsync()
+        return allAuthenticationContextClassReferences;
+    }
+
+    public async Task<AuthenticationContextClassReference> GetAuthenticationContextClassReferenceByIdAsync(string ACRId)
+    {
+        try
         {
-            List<Beta.AuthenticationContextClassReference> allAuthenticationContextClassReferences = new List<Beta.AuthenticationContextClassReference>();
+            AuthenticationContextClassReference ACRObject = await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences[ACRId].GetAsync();
 
-            try
-            {
-                Beta.IConditionalAccessRootAuthenticationContextClassReferencesCollectionPage authenticationContextClassreferences = await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences.Request().GetAsync();
-
-                if (authenticationContextClassreferences != null)
-                {
-                    allAuthenticationContextClassReferences = await ProcessIAuthenticationContextClassReferenceRootPoliciesCollectionPage(authenticationContextClassreferences);
-                }
-            }
-            catch (ServiceException e)
-            {
-                Console.WriteLine($"We could not retrieve the existing ACRs: {e}");
-                if (e.InnerException != null)
-                {
-                    var exp = (MicrosoftIdentityWebChallengeUserException)e.InnerException;
-                    throw exp;
-                }
-                throw e;
-            }
-
-            return allAuthenticationContextClassReferences;
+            return ACRObject;
         }
-
-        public async Task<Beta.AuthenticationContextClassReference> GetAuthenticationContextClassReferenceByIdAsync(string ACRId)
+        catch (ServiceException gex)
         {
-            try
+            if (gex.ResponseStatusCode != (int)System.Net.HttpStatusCode.NotFound)
             {
-                Beta.AuthenticationContextClassReference ACRObject = await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences[ACRId].Request().GetAsync();
-                return ACRObject;
+                throw;
             }
-            catch (ServiceException gex)
+        }
+        return null;
+    }
+
+    public async Task<AuthenticationContextClassReference> CreateAuthenticationContextClassReferenceAsync(string id, string displayName, string description, bool IsAvailable)
+    {
+        AuthenticationContextClassReference newACRObject = null;
+
+        try
+        {
+            newACRObject = await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences.PostAsync(new AuthenticationContextClassReference
             {
-                if (gex.StatusCode != System.Net.HttpStatusCode.NotFound)
-                {
-                    throw;
-                }
-            }
+                Id = id,
+                DisplayName = displayName,
+                Description = description,
+                IsAvailable = IsAvailable
+            });
+        }
+        catch (ServiceException e)
+        {
+            Console.WriteLine("We could not add a new ACR: " + e.Message);
             return null;
         }
 
-        public async Task<Beta.AuthenticationContextClassReference> CreateAuthenticationContextClassReferenceAsync(string id, string displayName, string description, bool IsAvailable)
-        {
-            Beta.AuthenticationContextClassReference newACRObject = null;
+        return newACRObject;
+    }
 
-            try
+    public async Task<AuthenticationContextClassReference> UpdateAuthenticationContextClassReferenceAsync(string ACRId, bool IsAvailable, string displayName = null, string description = null)
+    {
+        AuthenticationContextClassReference ACRObjectToUpdate = await GetAuthenticationContextClassReferenceByIdAsync(ACRId);
+
+        if (ACRObjectToUpdate == null)
+        {
+            throw new ArgumentNullException(nameof(ACRId), $"No ACR matching '{ACRId}' exists");
+        }
+
+        try
+        {
+            ACRObjectToUpdate = await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences[ACRId].PatchAsync(new AuthenticationContextClassReference
             {
-                newACRObject = await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences.Request().AddAsync(new Beta.AuthenticationContextClassReference
+                Id = ACRId,
+                DisplayName = displayName ?? ACRObjectToUpdate.DisplayName,
+                Description = description ?? ACRObjectToUpdate.Description,
+                IsAvailable = IsAvailable
+            });
+        }
+        catch (ServiceException e)
+        {
+            Console.WriteLine("We could not update the ACR: " + e.Message);
+            return null;
+        }
+
+        return ACRObjectToUpdate;
+    }
+
+    public async Task DeleteAuthenticationContextClassReferenceAsync(string ACRId)
+    {
+        try
+        {
+            await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences[ACRId].DeleteAsync();
+        }
+        catch (ServiceException e)
+        {
+            Console.WriteLine($"We could not delete the ACR with Id-{ACRId}: {e}");
+        }
+    }
+
+    private async Task<List<AuthenticationContextClassReference>> ProcessIAuthenticationContextClassReferenceRootPoliciesCollectionPage(
+        AuthenticationContextClassReferenceCollectionResponse authenticationContextClassreferencesCollectionResponse)
+    {
+        List<AuthenticationContextClassReference> allAuthenticationContextClassReferences = new List<AuthenticationContextClassReference>();
+
+        try
+        {
+            if (authenticationContextClassreferencesCollectionResponse != null)
+            {
+                // create a page iterator to iterate over the collection and add all authenticationContextClassreferences to the allAuthenticationContextClassReferences.
+                var pageIterator = PageIterator<AuthenticationContextClassReference, AuthenticationContextClassReferenceCollectionResponse>.CreatePageIterator(
+                    _graphServiceClient, authenticationContextClassreferencesCollectionResponse, (authenticationContextClassreference) =>
                 {
-                    Id = id,
-                    DisplayName = displayName,
-                    Description = description,
-                    IsAvailable = IsAvailable,
-                    ODataType = null
+                    Console.WriteLine(PrintAuthenticationContextClassReference(authenticationContextClassreference));
+                    allAuthenticationContextClassReferences.Add(authenticationContextClassreference);
+                    return true;
                 });
-            }
-            catch (ServiceException e)
-            {
-                Console.WriteLine("We could not add a new ACR: " + e.Error.Message);
-                return null;
-            }
 
-            return newACRObject;
-        }
+                await pageIterator.IterateAsync();
 
-        public async Task<Beta.AuthenticationContextClassReference> UpdateAuthenticationContextClassReferenceAsync(string ACRId, bool IsAvailable, string displayName = null, string description = null)
-        {
-            Beta.AuthenticationContextClassReference ACRObjectToUpdate = await GetAuthenticationContextClassReferenceByIdAsync(ACRId);
-
-            if (ACRObjectToUpdate == null)
-            {
-                throw new ArgumentNullException("id", $"No ACR matching '{ACRId}' exists");
-            }
-
-            try
-            {
-                ACRObjectToUpdate = await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences[ACRId].Request().UpdateAsync(new Beta.AuthenticationContextClassReference
+                while (pageIterator.State != PagingState.Complete)
                 {
-                    Id = ACRId,
-                    DisplayName = displayName ?? ACRObjectToUpdate.DisplayName,
-                    Description = description ?? ACRObjectToUpdate.Description,
-                    IsAvailable = IsAvailable,
-                    ODataType = null
-                });
-            }
-            catch (ServiceException e)
-            {
-                Console.WriteLine("We could not update the ACR: " + e.Error.Message);
-                return null;
-            }
-
-            return ACRObjectToUpdate;
-        }
-
-        public async Task DeleteAuthenticationContextClassReferenceAsync(string ACRId)
-        {
-            try
-            {
-                await _graphServiceClient.Identity.ConditionalAccess.AuthenticationContextClassReferences[ACRId].Request().DeleteAsync();
-            }
-            catch (ServiceException e)
-            {
-                Console.WriteLine($"We could not delete the ACR with Id-{ACRId}: {e}");
-            }
-        }
-
-        private async Task<List<Beta.AuthenticationContextClassReference>> ProcessIAuthenticationContextClassReferenceRootPoliciesCollectionPage(Beta.IConditionalAccessRootAuthenticationContextClassReferencesCollectionPage authenticationContextClassreferencesPage)
-        {
-            List<Beta.AuthenticationContextClassReference> allAuthenticationContextClassReferences = new List<Beta.AuthenticationContextClassReference>();
-
-            try
-            {
-                if (authenticationContextClassreferencesPage != null)
-                {
-                    var pageIterator = PageIterator<Beta.AuthenticationContextClassReference>.CreatePageIterator(_graphServiceClient, authenticationContextClassreferencesPage, (authenticationContextClassreference) =>
-                    {
-                        Console.WriteLine(PrintAuthenticationContextClassReference(authenticationContextClassreference));
-                        allAuthenticationContextClassReferences.Add(authenticationContextClassreference);
-                        return true;
-                    });
-
-                    await pageIterator.IterateAsync();
-
-                    while (pageIterator.State != PagingState.Complete)
-                    {
-                        await pageIterator.ResumeAsync();
-                    }
+                    await pageIterator.ResumeAsync();
                 }
             }
-            catch (ServiceException e)
-            {
-                Console.WriteLine($"We could not process the authentication context class references list: {e}");
-                return null;
-            }
-
-            return allAuthenticationContextClassReferences;
         }
-
-        public async Task<string> PrintAuthenticationContextClassReference(Beta.AuthenticationContextClassReference authenticationContextClassReference, bool verbose = false)
+        catch (ServiceException e)
         {
-            string toPrint = string.Empty;
-            StringBuilder more = new StringBuilder();
-
-            if (authenticationContextClassReference != null)
-            {
-                toPrint = $"DisplayName-{authenticationContextClassReference.DisplayName}, IsAvailable-{authenticationContextClassReference.IsAvailable}, Id- '{authenticationContextClassReference.Id}'";
-
-                if (verbose)
-                {
-                    more.AppendLine($", Description-'{authenticationContextClassReference.Description}'");
-                }
-            }
-            else
-            {
-                Console.WriteLine("The provided authenticationContextClassReference is null!");
-            }
-
-            return await Task.FromResult(toPrint + more.ToString());
+            Console.WriteLine($"We could not process the authentication context class references list: {e}");
+            return null;
         }
+
+        return allAuthenticationContextClassReferences;
+    }
+
+    public async Task<string> PrintAuthenticationContextClassReference(AuthenticationContextClassReference authenticationContextClassReference, bool verbose = false)
+    {
+        string toPrint = string.Empty;
+        StringBuilder more = new();
+
+        if (authenticationContextClassReference != null)
+        {
+            toPrint = $"DisplayName-{authenticationContextClassReference.DisplayName}, IsAvailable-{authenticationContextClassReference.IsAvailable}, Id- '{authenticationContextClassReference.Id}'";
+
+            if (verbose)
+            {
+                more.AppendLine($", Description-'{authenticationContextClassReference.Description}'");
+            }
+        }
+        else
+        {
+            Console.WriteLine("The provided authenticationContextClassReference is null!");
+        }
+
+        return await Task.FromResult(toPrint + more.ToString());
     }
 }

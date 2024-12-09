@@ -1,6 +1,4 @@
-﻿extern alias BetaLib;
-
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Identity.Web;
-using Beta = BetaLib.Microsoft.Graph;
 using TodoListClient.Models;
 using TodoListClient.Common;
 
@@ -26,12 +23,14 @@ namespace TodoListClient.Controllers
     public class AdminController : Controller
     {
         //private CommonDBContext _commonDBContext;
-        private AuthenticationContextClassReferencesOperations _authContextClassReferencesOperations;
-        private IConfiguration _configuration;
+        private readonly AuthenticationContextClassReferencesOperations _authContextClassReferencesOperations;
+        private readonly IConfiguration _configuration;
 
-        private string TenantId;
+        private readonly string TenantId;
 
-        public AdminController(IConfiguration configuration, AuthenticationContextClassReferencesOperations authContextClassReferencesOperations)
+        public AdminController(
+            IConfiguration configuration,
+            AuthenticationContextClassReferencesOperations authContextClassReferencesOperations)
         {
             _configuration = configuration;
             _authContextClassReferencesOperations = authContextClassReferencesOperations;
@@ -41,18 +40,18 @@ namespace TodoListClient.Controllers
         public async Task<IActionResult> Index()
         {
             // Defaults
-            IList<SelectListItem> AuthContextValues = new List<SelectListItem>();
+            IList<SelectListItem> AuthContextValues = [];
 
             IEnumerable<SelectListItem> Operations = new List<SelectListItem>
                 {
-                    new SelectListItem{Text= "Post"},
+                    new SelectListItem{ Text= "Post" },
                     new SelectListItem{ Text= "Delete"}
                 };
 
-            // If this tenant already has authcontext available, we use those instead.
-            var existingAuthContexts = await getAuthenticationContextValues();
+            // If this tenant already has auth context available, we use those instead.
+            var existingAuthContexts = await GetAuthenticationContextValues();
 
-            if (existingAuthContexts.Count() > 0)
+            if (existingAuthContexts.Count > 0)
             {
                 AuthContextValues.Clear();
 
@@ -71,10 +70,10 @@ namespace TodoListClient.Controllers
         }
 
         // returns a default set of AuthN context values for the app to work with, either from Graph a or a default hard coded set
-        private async Task<Dictionary<string, string>> getAuthenticationContextValues()
+        private async Task<Dictionary<string, string>> GetAuthenticationContextValues()
         {
             // Default values, if no values anywhere, this table will be used.
-            Dictionary<string, string> dictACRValues = new Dictionary<string, string>()
+            Dictionary<string, string> dictACRValues = new()
                 {
                     {"C1","Require strong authentication" },
                     {"C2","Require compliant devices" },
@@ -90,9 +89,11 @@ namespace TodoListClient.Controllers
             }
             else
             {
-                var existingAuthContexts = await _authContextClassReferencesOperations.ListAuthenticationContextClassReferencesAsync();
+                var existingAuthContexts = 
+                    await _authContextClassReferencesOperations.ListAuthenticationContextClassReferencesAsync();
 
-                if (existingAuthContexts.Count() > 0)                 // If this tenant already has authcontext available, we use those instead.
+                // If this tenant already has auth context available, we use those instead.
+                if (existingAuthContexts.Count > 0)
                 {
                     dictACRValues.Clear();
 
@@ -102,7 +103,7 @@ namespace TodoListClient.Controllers
                     }
 
                     // Save this in session
-                    HttpContext.Session.Set<Dictionary<string, string>>(sessionKey, dictACRValues);
+                    HttpContext.Session.Set(sessionKey, dictACRValues);
                 }
             }
 
@@ -158,7 +159,7 @@ namespace TodoListClient.Controllers
         /// </summary>
         /// <returns></returns>
         [AuthorizeForScopes(ScopeKeySection = "GraphBeta:Scopes")]
-        public async Task<List<Beta.AuthenticationContextClassReference>> CreateOrFetch()
+        public async Task<List<Microsoft.Graph.Models.AuthenticationContextClassReference>> CreateOrFetch()
         {
             // Call Graph to check first
             var lstPolicies = await _authContextClassReferencesOperations.ListAuthenticationContextClassReferencesAsync();
@@ -180,7 +181,7 @@ namespace TodoListClient.Controllers
         /// <returns></returns>
         private async Task CreateAuthContextViaGraph()
         {
-            Dictionary<string, string> dictACRValues = await getAuthenticationContextValues();
+            Dictionary<string, string> dictACRValues = await GetAuthenticationContextValues();
 
             foreach (KeyValuePair<string, string> acr in dictACRValues)
             {
@@ -198,7 +199,7 @@ namespace TodoListClient.Controllers
         /// <returns></returns>
         public async Task SaveOrUpdateAuthContextDB(AuthContext authContext)
         {
-            Dictionary<string, string> dictACRValues = await getAuthenticationContextValues();
+            Dictionary<string, string> dictACRValues = await GetAuthenticationContextValues();
             authContext.AuthContextDisplayName = dictACRValues.FirstOrDefault(x => x.Key == authContext.AuthContextId).Value;
 
             using (var commonDBContext = new CommonDBContext(_configuration))
