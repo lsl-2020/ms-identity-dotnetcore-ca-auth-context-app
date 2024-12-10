@@ -190,7 +190,6 @@ namespace TodoListClient.Controllers
                     claimsChallenge = "{\"id_token\":{\"acrs\":{\"essential\":true,\"value\":\"" + savedAuthContextId + "\"}}}";
                     ////claimsChallenge = "{\"id_token\":{\"acrs\":{\"essential\":true,\"values\":[\"c1\",\"c2\",\"c99\"]}}}";
                     ////claimsChallenge = "{\"id_token\":{\"acrs\":{\"values\":[\"c1\",\"c2\",\"c99\"]}}}";
-                    ////claimsChallenge = "{\"id_token\":{\"acrs\":{\"values\":[\"c1\",\"c2\"]}}}";
                 }
             }
 

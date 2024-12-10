@@ -15,35 +15,39 @@ tenant_id = '633fc03f-56d0-459c-a1b5-ab5083fc35d4'
 
 # Do not modify this variable. It represents the programmatic ID for
 # MS Graph along with the default scope of '/.default'.
-scopes = [ '00000003-0000-0000-c000-000000000000/.default' ]
+scopes = ['00000003-0000-0000-c000-000000000000/.default']
 
 # Check for too few or too many command-line arguments.
 if (len(sys.argv) > 1) and (len(sys.argv) != 3):
-  print("Usage: get-tokens.py <client ID> <tenant ID>")
-  exit(1)
+    print("Usage: get-tokens.py <client ID> <tenant ID>")
+    exit(1)
 
 # If the registered app's client ID and tenant ID are provided as
 # command-line variables, set them here.
 if len(sys.argv) > 1:
-  client_id = sys.argv[1]
-  tenant_id = sys.argv[2]
+    client_id = sys.argv[1]
+    tenant_id = sys.argv[2]
 
 app = PublicClientApplication(
-  client_id = client_id,
-  authority = "https://login.microsoftonline.com/" + tenant_id
+    client_id=client_id,
+    authority="https://login.microsoftonline.com/" + tenant_id,
 )
 
 acquire_tokens_result = app.acquire_token_interactive(
-  scopes = scopes,
-  port = 44321,
-  claims_challenge = '''{"id_token": {"arcs": {"essential": true, "values":["c1","c2"]}}}'''
+    # login_hint="lsl-authcontext-assigned-user00@w365testintint01.onmicrosoft.com",
+    scopes=scopes,
+    port=44321,
+    prompt="login",
+    # It doesn't matter what auth context you put in the claims_challenge here. All auth context Ids 
+    # that applied in the CA policy will be evaluated and added to the ACRs claim in the return token.
+    claims_challenge='''{"id_token": {"arcs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
 )
 
 if 'error' in acquire_tokens_result:
-  print("Error: " + acquire_tokens_result['error'])
-  print("Description: " + acquire_tokens_result['error_description'])
+    print("Error: " + acquire_tokens_result['error'])
+    print("Description: " + acquire_tokens_result['error_description'])
 else:
-  print("Access token:\n")
-  print(acquire_tokens_result['access_token'])
-  print("\nRefresh token:\n")
-  print(acquire_tokens_result['refresh_token'])
+    print("Access token:\n")
+    print(acquire_tokens_result['access_token'])
+    print("\nRefresh token:\n")
+    print(acquire_tokens_result['refresh_token'])

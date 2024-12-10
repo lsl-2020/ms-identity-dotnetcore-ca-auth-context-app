@@ -129,7 +129,8 @@ namespace TodoListClient.Controllers
             AuthContext authContext = null;
             using (var commonDBContext = new CommonDBContext(_configuration))
             {
-                authContext = commonDBContext.AuthContext.FirstOrDefault(x => x.AuthContextId == id && x.TenantId == TenantId);
+                // authContext = commonDBContext.AuthContext.FirstOrDefault(x => x.AuthContextId == id && x.TenantId == TenantId);
+                authContext = commonDBContext.AuthContext.FirstOrDefault(x => x.Id.ToString() == id);
             }
             return View(authContext);
         }
@@ -140,7 +141,7 @@ namespace TodoListClient.Controllers
         /// <param name="authContext"></param>
         /// <returns></returns>
         [HttpPost]
-        public ActionResult Delete([Bind("TenantId,AuthContextId,AuthContextDisplayName,Operation")] AuthContext authContext)
+        public ActionResult Delete([Bind("Id,TenantId,AuthContextId,AuthContextDisplayName,Operation")] AuthContext authContext)
         {
             using (var commonDBContext = new CommonDBContext(_configuration))
             {
@@ -201,6 +202,7 @@ namespace TodoListClient.Controllers
 
             using (var commonDBContext = new CommonDBContext(_configuration))
             {
+                /*
                 var isExists = commonDBContext.AuthContext.AsNoTracking().FirstOrDefault(x => x.TenantId == TenantId && x.Operation == authContext.Operation);
                 if (isExists == null)
                 {
@@ -210,6 +212,8 @@ namespace TodoListClient.Controllers
                 {
                     commonDBContext.AuthContext.Update(authContext);
                 }
+                */
+                commonDBContext.AuthContext.Add(authContext);
                 await commonDBContext.SaveChangesAsync();
             }
         }

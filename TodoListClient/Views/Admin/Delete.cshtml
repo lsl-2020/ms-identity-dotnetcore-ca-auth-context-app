@@ -12,6 +12,12 @@
     <hr />
     <dl class="row">
         <dt class="col-sm-2">
+            @Html.DisplayNameFor(model => model.Id)
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Id)
+        </dd>
+        <dt class="col-sm-2">
             @Html.DisplayNameFor(model => model.AuthContextDisplayName)
         </dt>
         <dd class="col-sm-10">
@@ -26,6 +32,7 @@
     </dl>
 
     <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
         <input type="hidden" asp-for="TenantId" />
         <input type="hidden" asp-for="AuthContextId" />
         <input type="hidden" asp-for="AuthContextDisplayName" />

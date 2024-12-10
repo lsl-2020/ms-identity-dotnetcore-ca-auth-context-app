@@ -33,7 +33,8 @@ namespace TodoListClient.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            modelBuilder.Entity<AuthContext>().HasKey(x => new { x.TenantId, x.Operation });
+            // modelBuilder.Entity<AuthContext>().HasKey(x => new { x.TenantId, x.Operation });
+            modelBuilder.Entity<AuthContext>().HasKey(x => new { x.Id });
         }
     }
 }

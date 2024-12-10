@@ -24,12 +24,10 @@
     <div class="form-group">
         <label asp-for="Operation" class="control-label">Web API operation</label>
         <select class="form-control" asp-for="Operation" asp-items="@((List<SelectListItem>)TempData["Operations"])"></select>
-
     </div>
     <div class="form-group">
         <label asp-for="AuthContextDisplayName" class="control-label">Auth Context</label>
         <select class="form-control" asp-for="AuthContextId" id="selAuthContextValue" asp-items="@((List<SelectListItem>)TempData["AuthContextValues"])"></select>
-
     </div>
     <div class="form-group">
         <input type="hidden" asp-for="AuthContextDisplayName" />

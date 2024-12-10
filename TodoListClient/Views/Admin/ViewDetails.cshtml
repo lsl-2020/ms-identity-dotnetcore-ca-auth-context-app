@@ -10,6 +10,9 @@
         <thead>
             <tr>
                 <th align="left">
+                    Id
+                </th>
+                <th align="left">
                     TenantId
                 </th>
                 <th align="left">
@@ -31,6 +34,9 @@
             <tbody>
                 <tr>
                     <td>
+                        @item.Id
+                    </td>
+                    <td>
                         @item.TenantId
                     </td>
                     <td>
@@ -43,8 +49,7 @@
                         @item.Operation
                     </td>
                     <td>
-                        @Html.ActionLink("Delete", "Delete", new { id = @item.AuthContextId })
-
+                        @Html.ActionLink("Delete", "Delete", new { id = @item.Id })
                     </td>
                 </tr>
             </tbody>
