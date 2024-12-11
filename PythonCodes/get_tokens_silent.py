@@ -15,7 +15,7 @@ logging.basicConfig(level=logging.INFO)
 app = msal.ConfidentialClientApplication(
     client_id='755a4624-3e53-45e8-aaf8-60b580dd3a44',
     authority='https://login.microsoftonline.com/633fc03f-56d0-459c-a1b5-ab5083fc35d4',
-    client_credential="YourClientCredential",
+    client_credential="YourClientCredentialHere", # Replace with the real client secret here.
     # token_cache=...  # Default cache is in memory only.
                        # You can learn how to use SerializableTokenCache from
                        # https://msal-python.readthedocs.io/en/latest/#msal.SerializableTokenCache

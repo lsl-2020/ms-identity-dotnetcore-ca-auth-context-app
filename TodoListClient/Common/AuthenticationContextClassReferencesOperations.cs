@@ -17,12 +17,10 @@ namespace TodoListClient.Common;
 public class AuthenticationContextClassReferencesOperations
 {
     private readonly GraphServiceClient _graphServiceClient;
-    private readonly MicrosoftIdentityConsentAndConditionalAccessHandler _consentHandler;
 
-    public AuthenticationContextClassReferencesOperations(GraphServiceClient graphServiceClient, MicrosoftIdentityConsentAndConditionalAccessHandler consentHandler)
+    public AuthenticationContextClassReferencesOperations(GraphServiceClient graphServiceClient)
     {
         _graphServiceClient = graphServiceClient;
-        _consentHandler = consentHandler;
     }
 
     public async Task<List<AuthenticationContextClassReference>> ListAuthenticationContextClassReferencesAsync()

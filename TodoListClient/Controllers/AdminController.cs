@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TodoListClient.Models;
 using TodoListClient.Common;
+using Microsoft.Identity.Web;
 
 namespace TodoListClient.Controllers
 {
@@ -19,6 +20,7 @@ namespace TodoListClient.Controllers
     /// Save and update data in database.
     /// </summary>
     [Authorize]
+    [AuthorizeForScopes(Scopes = ["Policy.ReadWrite.ConditionalAccess"])]
     public class AdminController : Controller
     {
         private readonly AuthenticationContextClassReferencesOperations _authContextClassReferencesOperations;
