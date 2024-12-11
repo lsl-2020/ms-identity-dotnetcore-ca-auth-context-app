@@ -5,7 +5,6 @@ using Microsoft.Identity.Web;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Text.Json;
 using TodoListClient.Models;
 
@@ -170,26 +169,27 @@ namespace TodoListClient.Controllers
         {
             string claimsChallenge = string.Empty;
 
-            string savedAuthContextId = _commonDBContext.AuthContext.FirstOrDefault(x => x.Operation == method && x.TenantId == _configuration["AzureAD:TenantId"])?.AuthContextId;
+            HashSet<string> requiredAuthContextIds = _commonDBContext.AuthContext
+                .Where(x => x.Operation == method && x.TenantId == _configuration["AzureAD:TenantId"])
+                .Select(x => x.AuthContextId).ToHashSet();
 
-            if (!string.IsNullOrEmpty(savedAuthContextId))
+            if (requiredAuthContextIds.Count > 0)
             {
                 HttpContext context = this.HttpContext;
 
-                string authenticationContextClassReferencesClaim = "acrs";
+                const string authenticationContextClassReferencesClaim = "acrs";
 
                 if (context == null || context.User == null || context.User.Claims == null || !context.User.Claims.Any())
                 {
-                    throw new ArgumentNullException("No Usercontext is available to pick claims from");
+                    throw new ArgumentNullException("No User context is available to pick claims from");
                 }
 
-                Claim acrsClaim = context.User.FindAll(authenticationContextClassReferencesClaim).FirstOrDefault(x => x.Value == savedAuthContextId);
+                HashSet<string> existingAuthContextIds = context.User.FindAll(authenticationContextClassReferencesClaim)
+                    .Select(x => x.Value).ToHashSet();
 
-                if (acrsClaim?.Value != savedAuthContextId)
+                if (!requiredAuthContextIds.IsSubsetOf(existingAuthContextIds))
                 {
-                    claimsChallenge = "{\"id_token\":{\"acrs\":{\"essential\":true,\"value\":\"" + savedAuthContextId + "\"}}}";
-                    ////claimsChallenge = "{\"id_token\":{\"acrs\":{\"essential\":true,\"values\":[\"c1\",\"c2\",\"c99\"]}}}";
-                    ////claimsChallenge = "{\"id_token\":{\"acrs\":{\"values\":[\"c1\",\"c2\",\"c99\"]}}}";
+                    claimsChallenge = "{\"id_token\":{\"acrs\":{\"essential\":true,\"values\":[\"" + string.Join("\",\"", requiredAuthContextIds) + "\"]}}}";
                 }
             }
 

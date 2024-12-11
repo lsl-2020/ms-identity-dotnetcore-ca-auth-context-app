@@ -1,8 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
-//using System.Data.Entity;
-
 namespace TodoListClient.Models
 {
     public class CommonDBContext : DbContext
@@ -33,7 +31,6 @@ namespace TodoListClient.Models
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-            // modelBuilder.Entity<AuthContext>().HasKey(x => new { x.TenantId, x.Operation });
             modelBuilder.Entity<AuthContext>().HasKey(x => new { x.Id });
         }
     }

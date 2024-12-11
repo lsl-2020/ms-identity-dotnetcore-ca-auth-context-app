@@ -59,14 +59,12 @@ public class Startup
         // JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 
         // Adds Microsoft Identity platform (AAD v2.0) support to authenticate users
+        // Inject GraphServiceClient to support Microsoft Graph operations.
         services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
                  .AddMicrosoftIdentityWebApp(Configuration, "AzureAd", subscribeToOpenIdConnectMiddlewareDiagnosticsEvents: true)
                  .EnableTokenAcquisitionToCallDownstreamApi(["Policy.ReadWrite.ConditionalAccess"])
                  .AddMicrosoftGraph(options => Configuration.GetSection("MicrosoftGraph").Bind(options))
                  .AddInMemoryTokenCaches();
-
-        // Inject GraphServiceClient to support Microsoft Graph operations.
-        ////services.AddMicrosoftGraph(options => Configuration.GetSection("MicrosoftGraph").Bind(options));
 
         services.AddScoped<AuthenticationContextClassReferencesOperations>();
 

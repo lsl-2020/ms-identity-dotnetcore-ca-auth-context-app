@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using TodoListClient.Models;
 using TodoListClient.Common;
@@ -131,7 +130,6 @@ namespace TodoListClient.Controllers
             AuthContext authContext = null;
             using (var commonDBContext = new CommonDBContext(_configuration))
             {
-                // authContext = commonDBContext.AuthContext.FirstOrDefault(x => x.AuthContextId == id && x.TenantId == TenantId);
                 authContext = commonDBContext.AuthContext.FirstOrDefault(x => x.Id.ToString() == id);
             }
             return View(authContext);
@@ -204,17 +202,6 @@ namespace TodoListClient.Controllers
 
             using (var commonDBContext = new CommonDBContext(_configuration))
             {
-                /*
-                var isExists = commonDBContext.AuthContext.AsNoTracking().FirstOrDefault(x => x.TenantId == TenantId && x.Operation == authContext.Operation);
-                if (isExists == null)
-                {
-                    commonDBContext.AuthContext.Add(authContext);
-                }
-                else
-                {
-                    commonDBContext.AuthContext.Update(authContext);
-                }
-                */
                 commonDBContext.AuthContext.Add(authContext);
                 await commonDBContext.SaveChangesAsync();
             }
