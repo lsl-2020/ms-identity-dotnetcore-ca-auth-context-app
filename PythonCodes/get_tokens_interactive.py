@@ -35,12 +35,21 @@ app = PublicClientApplication(
 
 acquire_tokens_result = app.acquire_token_interactive(
     # login_hint="lsl-authcontext-assigned-user00@w365testintint01.onmicrosoft.com",
+    # login_hint="shileiliu@microsoft.com",
     scopes=scopes,
     port=44321,
-    prompt="login",
-    # It doesn't matter what auth context you put in the claims_challenge here. All auth context Ids 
-    # that applied in the CA policy will be evaluated and added to the ACRs claim in the return token.
-    claims_challenge='''{"id_token": {"arcs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
+    # prompt="login",
+    # claims_challenge='''{"id_token": {"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
+    # claims_challenge='''{"access_token": {"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
+    claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"essential":true,"values":["c1","c2"]}}}'''
+    # claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"values":["c1","c2"]}}}'''
+    # claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"essential":true,"values":["c1","c2","c3","c4","c5","c6"]}}}'''
+    # claims_challenge='''{"id_token": {"xms_cc":{"values":["cp1"]},"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
+    # claims_challenge='''{"access_token": {"xms_cc":{"values":["cp1"]},"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
+    # claims_challenge='''{"id_token": {"xms_cc":{"values":["cp1"]}}}}'''
+    # claims_challenge='''{"wrong_token": {"wrong_field":{"wrong_values":["whatever"]}}}'''
+    # claims_challenge='''{"id_token": {"xms_cc":{"values":["cp1"]}}}'''
+    # claims_challenge='''{"access_token": {"xms_cc":{"values":["cp1"]}}}'''
 )
 
 if 'error' in acquire_tokens_result:
