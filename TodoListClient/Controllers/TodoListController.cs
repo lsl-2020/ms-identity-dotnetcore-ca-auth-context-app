@@ -190,8 +190,8 @@ namespace TodoListClient.Controllers
                 if (!requiredAuthContextIds.IsSubsetOf(existingAuthContextIds))
                 {
                     //claimsChallenge = "{\"access_token\":{\"xms_cc\":{\"values\":[\"cp1\"]},\"acrs\":{\"essential\":true,\"values\":[\"" + string.Join("\",\"", requiredAuthContextIds) + "\"]}}}";
-                    //claimsChallenge = "{\"access_token\":{\"xms_cc\":{\"values\":[\"cp1\"]}}}";
-                    claimsChallenge = "{\"wrong_token\":{\"wrong_field\":{\"wrong_values\":[\"whatever\"]}}}";
+                    claimsChallenge = "{\"access_token\":{\"xms_cc\":{\"values\":[\"cp1\"]}}}";
+                    //claimsChallenge = "{\"wrong_token\":{\"wrong_field\":{\"wrong_values\":[\"whatever\"]}}}";
                     //claimsChallenge = "{\"id_token\":{\"acrs\":{\"essential\":true,\"values\":[\"" + string.Join("\",\"", requiredAuthContextIds) + "\"]}}}";
                     //claimsChallenge = "{\"id_token\":{\"acrs\":{\"values\":[\"" + string.Join("\",\"", requiredAuthContextIds) + "\"]}}}";
                     //claimsChallenge = "{\"id_token\":{\"acrs\":{\"values\":[\"" + string.Join("\",\"", requiredAuthContextIds) + "\"]}}}";

@@ -34,15 +34,16 @@ app = PublicClientApplication(
 )
 
 acquire_tokens_result = app.acquire_token_interactive(
-    # login_hint="lsl-authcontext-assigned-user00@w365testintint01.onmicrosoft.com",
-    # login_hint="shileiliu@microsoft.com",
+    # login_hint="ally@w365testintint01.onmicrosoft.com",
+    # login_hint="jeff@w365testintint01.onmicrosoft.com",
+    # login_hint="john@w365testintint01.onmicrosoft.com",
     scopes=scopes,
     port=44321,
     # prompt="login",
     # claims_challenge='''{"id_token": {"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
     # claims_challenge='''{"access_token": {"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
-    claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"essential":true,"values":["c1","c2"]}}}'''
-    # claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"values":["c1","c2"]}}}'''
+    # claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"essential":true,"values":["c1","c2"]}}}'''
+    # claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"values":["c7"]}}}'''
     # claims_challenge='''{"access_token":{"xms_cc":{"values":["cp1"]},"acrs":{"essential":true,"values":["c1","c2","c3","c4","c5","c6"]}}}'''
     # claims_challenge='''{"id_token": {"xms_cc":{"values":["cp1"]},"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
     # claims_challenge='''{"access_token": {"xms_cc":{"values":["cp1"]},"acrs": {"essential": true, "values":["c1","c2","c3","c4","c5","c6"]}}}'''
